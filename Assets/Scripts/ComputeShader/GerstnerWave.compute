@@ -1,0 +1,55 @@
+#pragma kernel WaterSimulation
+
+RWStructuredBuffer<float3> _Positions;
+
+uint _Resolution;
+float _Step, _Time;
+float4 _WaveA, _WaveB, _WaveC;
+#define PI 3.14159265358979323846
+
+float2 GetUV (uint3 id) {
+	return (id.xy + 0.5) * _Step - 1.0;
+}
+
+void SetPosition(uint3 id, float3 position) {
+    if(id.x < _Resolution && id.y < _Resolution) {
+        _Positions[id.y + id.x * _Resolution] = position;
+    }
+}
+
+float3 GerstnerWave (
+	float4 wave, float3 p) {
+    float steepness = wave.z;
+    float wavelength = wave.w;
+    float k = 2 * PI / wavelength;
+	float c = sqrt(9.8 / k);
+	float2 d = normalize(wave.xy);
+	float f = k * (dot(d, p.xz) - c * _Time);
+	float a = steepness / k;
+
+	return float3(
+		0,
+		a * sin(f),
+		0
+	);
+}
+
+float3 SinWave (float u, float v, float t) {
+	float3 p;
+	p.x = u;
+	p.y = sin(PI * (u + v + t));
+	p.z = v;
+	return p;
+}
+
+[numthreads(8,8,1)]
+void WaterSimulation (uint3 id : SV_DispatchThreadID)
+{
+    float3 gridPoint = id;
+    float3 position = gridPoint;
+    position += GerstnerWave(_WaveA, gridPoint);
+    position += GerstnerWave(_WaveB, gridPoint);
+    position += GerstnerWave(_WaveC, gridPoint);
+
+    SetPosition(id, position);
+}
