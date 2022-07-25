@@ -4,7 +4,7 @@ RWStructuredBuffer<float3> _Positions;
 
 uint _Resolution;
 float _Step, _Time;
-float4 _WaveA, _WaveB, _WaveC;
+float4 _WaveA, _WaveB, _WaveC, _WaveD, _WaveE;
 #define PI 3.14159265358979323846
 
 float2 GetUV (uint3 id) {
@@ -12,8 +12,8 @@ float2 GetUV (uint3 id) {
 }
 
 void SetPosition(uint3 id, float3 position) {
-    if(id.x < _Resolution && id.y < _Resolution) {
-        _Positions[id.y + id.x * _Resolution] = position;
+    if(id.x < _Resolution && id.y < _Resolution && id.z < _Resolution) {
+        _Positions[id.x + id.z * _Resolution] = position;
     }
 }
 
@@ -42,7 +42,7 @@ float3 SinWave (float u, float v, float t) {
 	return p;
 }
 
-[numthreads(8,8,1)]
+[numthreads(8,1,8)]
 void WaterSimulation (uint3 id : SV_DispatchThreadID)
 {
     float3 gridPoint = id;
@@ -50,6 +50,8 @@ void WaterSimulation (uint3 id : SV_DispatchThreadID)
     position += GerstnerWave(_WaveA, gridPoint);
     position += GerstnerWave(_WaveB, gridPoint);
     position += GerstnerWave(_WaveC, gridPoint);
+	position += GerstnerWave(_WaveD, gridPoint);
+	position += GerstnerWave(_WaveE, gridPoint);
 
     SetPosition(id, position);
 }
