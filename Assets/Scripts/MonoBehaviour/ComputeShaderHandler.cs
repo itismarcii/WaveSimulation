@@ -109,18 +109,18 @@ public class ComputeShaderHandler : MonoBehaviour
         var closestVertex = vertices[0];
         var distance = Mathf.Infinity;
         var localScale = transform.localScale;
+        var position2 = new Vector2(transformPosition.x, transformPosition.z);
         
         foreach (var vertex in vertices)
         {
-            var result = (new Vector3(
-                vertex.x * localScale.x, 
-                vertex.y * localScale.y, 
-                vertex.z * localScale.z ) - transformPosition).sqrMagnitude;
+            var vertex2 = new Vector2(vertex.x * localScale.x, vertex.z * localScale.z);
             
-            if(distance <= result) continue;
+            var distanceToPosition = (vertex2 - position2).sqrMagnitude;
+            
+            if(distance <= distanceToPosition) continue;
             closestVertex = vertex;
-            distance = result;
+            distance = distanceToPosition;
         }
-        return closestVertex.y;
+        return closestVertex.y * transform.localScale.y;
     }
 }
