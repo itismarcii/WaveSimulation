@@ -21,7 +21,8 @@ public class ComputeShaderHandler : MonoBehaviour
     private int Resolution;
     [SerializeField] private float Speed;
     [SerializeField] private Wave WaveA, WaveB, WaveC, WaveD, WaveE;
-    private static readonly int 
+
+    private static readonly int
         PositionId = Shader.PropertyToID("_Positions"),
         ResolutionId = Shader.PropertyToID("_Resolution"),
         StepId = Shader.PropertyToID("_Step"),
@@ -58,9 +59,6 @@ public class ComputeShaderHandler : MonoBehaviour
         ComputShader_WaterSimulation.SetVector(WaveCId, WaveToVector4(WaveC));
         ComputShader_WaterSimulation.SetVector(WaveDId, WaveToVector4(WaveD));
         ComputShader_WaterSimulation.SetVector(WaveEId, WaveToVector4(WaveE));
-        
-        
-        
     }
 
     private void OnDisable()
@@ -85,10 +83,6 @@ public class ComputeShaderHandler : MonoBehaviour
 
         Vector3[] data = new Vector3[ComputeBuffer_WaterSimulation.count];
         ComputeBuffer_WaterSimulation.GetData(data);
-        
-        //var bounds = new Bounds(Vector3.zero, Vector3.one * (2f + 2f / Resolution));
-        //Graphics.DrawMeshInstancedProcedural(Mesh, 0, Material, bounds, ComputeBuffer_WaterSimulation.count);
-        
         BuildMesh(data);
     }
 
@@ -100,11 +94,11 @@ public class ComputeShaderHandler : MonoBehaviour
     private void BuildMesh(Vector3[] data)
     {
         var vertices = MeshFilter.mesh.vertices;
-
+        var position = -Resolution / 2;
+        var shift = new Vector3(position, 0, position);
+        
         for (var i = 0; i < vertices.Length; i++)
-        {
-            vertices[i] = data[i];
-        }
+            vertices[i] = data[i] + shift;
 
         MeshFilter.mesh.vertices = vertices;
     }
@@ -112,16 +106,21 @@ public class ComputeShaderHandler : MonoBehaviour
     public float GetWaveHeightAt(Vector3 transformPosition)
     {
         var vertices = MeshFilter.mesh.vertices;
-        Vector3 closestVertex = vertices[0];
+        var closestVertex = vertices[0];
         var distance = Mathf.Infinity;
+        var localScale = transform.localScale;
+        
         foreach (var vertex in vertices)
         {
-            var result = (vertex - transformPosition).sqrMagnitude;
-            if(distance > result) continue;
+            var result = (new Vector3(
+                vertex.x * localScale.x, 
+                vertex.y * localScale.y, 
+                vertex.z * localScale.z ) - transformPosition).sqrMagnitude;
+            
+            if(distance <= result) continue;
             closestVertex = vertex;
             distance = result;
         }
-
         return closestVertex.y;
     }
 }

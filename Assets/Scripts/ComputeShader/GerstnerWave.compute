@@ -5,6 +5,7 @@ RWStructuredBuffer<float3> _Positions;
 uint _Resolution;
 float _Step, _Time;
 float4 _WaveA, _WaveB, _WaveC, _WaveD, _WaveE;
+float3 _Shift;
 #define PI 3.14159265358979323846
 
 float2 GetUV (uint3 id) {
@@ -41,6 +42,7 @@ float3 SinWave (float u, float v, float t) {
 	p.z = v;
 	return p;
 }
+
 
 [numthreads(8,1,8)]
 void WaterSimulation (uint3 id : SV_DispatchThreadID)
