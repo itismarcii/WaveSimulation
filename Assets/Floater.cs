@@ -7,23 +7,23 @@ public class Floater : MonoBehaviour
 {
     private Rigidbody Rigidbody;
     public float DepthBeforeSubmerge = 1f;
-    private float DisplacementAmount;
+    public float DisplacementAmount;
     private int FloaterCount;
     public float WaterDrag = .99f;
     public float WaterAngularDrag = .5f;
+    public float Mass = 20;
 
     public ComputeShaderHandler ShaderHandler;
     
     private void Start()
     {
         Rigidbody = GetComponentInParent<Rigidbody>();
-        DisplacementAmount = Math.Abs(transform.localPosition.y);
         FloaterCount = transform.parent.GetComponentsInChildren<Floater>().Length;
     }
 
     private void FixedUpdate()
     {
-        if (!ShaderHandler) return;
+        if (!ShaderHandler) { Rigidbody.AddForce(Vector3.up * (Physics.gravity.y * Mass)); return; }
 
         var position = transform.position;
         Rigidbody.AddForceAtPosition(Physics.gravity  / FloaterCount, position, ForceMode.Acceleration);
@@ -33,10 +33,8 @@ public class Floater : MonoBehaviour
         
         var displacementMultiplier = Mathf.Clamp01((waveHeight - position.y) / DepthBeforeSubmerge) * DisplacementAmount;
         Rigidbody.AddForceAtPosition(new Vector3(0f, Mathf.Abs(Physics.gravity.y) * displacementMultiplier, 0f), position, ForceMode.Acceleration);
-        Rigidbody.AddForce(displacementMultiplier * -Rigidbody.velocity * WaterDrag * Time.fixedDeltaTime, ForceMode.VelocityChange);
-        //Rigidbody.AddForce(-Rigidbody.velocity * (displacementMultiplier * WaterDrag * Time.fixedDeltaTime),  ForceMode.VelocityChange);
-        Rigidbody.AddTorque(displacementMultiplier * -Rigidbody.angularVelocity * WaterAngularDrag * Time.fixedDeltaTime, ForceMode.VelocityChange);
-        //Rigidbody.AddTorque(Rigidbody.angularVelocity * (displacementMultiplier * WaterAngularDrag * Time.fixedDeltaTime), ForceMode.VelocityChange);
+        Rigidbody.AddForce(-Rigidbody.velocity * (displacementMultiplier * WaterDrag * Time.fixedDeltaTime),  ForceMode.VelocityChange);
+        Rigidbody.AddTorque(-Rigidbody.angularVelocity * (displacementMultiplier * WaterAngularDrag * Time.fixedDeltaTime), ForceMode.VelocityChange);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -49,4 +47,5 @@ public class Floater : MonoBehaviour
         {
         }
     }
+    
 }

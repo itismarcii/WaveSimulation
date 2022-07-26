@@ -38,6 +38,14 @@ public class ComputeShaderHandler : MonoBehaviour
     {
         MeshFilter = GetComponent<MeshFilter>();
         _Material = GetComponent<MeshRenderer>().material;
+
+        var localScale = transform.localScale;
+        var scaling = (localScale.x + localScale.y) / 2 / 10;
+        WaveA.Amplitude *= scaling;
+        WaveB.Amplitude *= scaling;
+        WaveC.Amplitude *= scaling;
+        WaveD.Amplitude *= scaling;
+        WaveE.Amplitude *= scaling;
     }
 
     private void OnEnable()
